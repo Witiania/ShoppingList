@@ -2,30 +2,29 @@ package com.example.shoppinglist.presentation
 
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.ListAdapter
 import com.example.shoppinglist.R
 import com.example.shoppinglist.domain.ShopItem
 
-class ShopListAdapter : RecyclerView.Adapter<ShopListAdapter.ShopItemViewHolder>() {
+class ShopListAdapter : ListAdapter<ShopItem, ShopItemViewHolder>(ShopItemDiffCallback()) {
 
-    var count = 0
+    // Так как используем List Adapter вместо RecyclerView то данные ниже больше не нужны!!!
+//    var shopList = listOf<ShopItem>()
+//        set(value) {
+//            val callBack = ShopListDiffCallBack(shopList,value)
+//            val diffResult = DiffUtil.calculateDiff(callBack)//Вычисляет разницу между старыми и новым списками
+//            diffResult.dispatchUpdatesTo(this)
+//            field = value}
 
 
-    var shopList = listOf<ShopItem>()
-        set(value) {
-            field = value
-            notifyDataSetChanged()
-        }
 
     var onShopItemLongClickListener: ((ShopItem) ->Unit)? = null // лямбда функция, паринимает ShopItem и ничего не возвращает
     //изночально кладем null
     var onShopItemClickListener:((ShopItem)->Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShopItemViewHolder {
-        Log.d("ShopListAdapter", "onCreateViewHolder, count: ${++count}")
+
         val layout = when(viewType){
             VIEW_TYPE_DISABLED ->R.layout.item_shop_disabled
             VIEW_TYPE_ENABLED -> R.layout.item_shop_enabled
@@ -37,7 +36,7 @@ class ShopListAdapter : RecyclerView.Adapter<ShopListAdapter.ShopItemViewHolder>
     }
 
     override fun onBindViewHolder(holder: ShopItemViewHolder, position: Int) {
-        val shopItem = shopList[position]
+        val shopItem = getItem(position)
         holder.itemView.setOnLongClickListener {
             onShopItemLongClickListener?.invoke(shopItem) //методом invike вызываем лямбда функцию
             true
@@ -46,32 +45,25 @@ class ShopListAdapter : RecyclerView.Adapter<ShopListAdapter.ShopItemViewHolder>
             onShopItemClickListener?.invoke(shopItem)
             Log.d("RV","Позиция номер: ${shopItem.id}")
         }
-        
+
         holder.tvName.text = shopItem.name
         holder.tvCount.text = shopItem.count.toString()
     }
 
 
-
-    override fun getItemCount(): Int {
-        return shopList.size
-    }
+//    Данный метод, больше не нужен!!!
+//    override fun getItemCount(): Int {
+//        return shopList.size
+//    }
 
     override fun getItemViewType(position: Int): Int {
-        val item = shopList[position]
+        val item = getItem(position)
         return if(item.enabled){
             VIEW_TYPE_ENABLED
         }else VIEW_TYPE_DISABLED
     }
 
-
-    class ShopItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val tvName = view.findViewById<TextView>(R.id.tv_name)
-        val tvCount = view.findViewById<TextView>(R.id.tv_count)
-    }
-
-
-    companion object{
+        companion object{
         const val VIEW_TYPE_ENABLED = 100
         const val VIEW_TYPE_DISABLED = 101
         const val MAX_POOL_SIZE = 15
